@@ -7,6 +7,11 @@
 #define SYMBOL_PERIOD     5   // 100Hz / 20Hz = 5
 #define SAMPLE_OFFSET     2
 
+#define STX   0x02
+#define ETX   0x03
+
+#define DEBUG 0
+
 void setup() {
 
   // Start out with LED pins as output
@@ -68,6 +73,9 @@ void loop() {
   static int counter;
   static int bit_pos;
   static char recv_char;
+  static boolean packet = false;
+  static char recv_buf[256];
+  static int recv_buf_pos;
 
   // Check if the flag was set
   // Should happen at approx. 100Hz
@@ -109,6 +117,7 @@ void loop() {
           // If this is the start bit, it must be set
           if (!symbol) {
             start_detected = false;
+            packet = false;
           }
           
         } else if (bit_pos == -1) {
@@ -119,16 +128,40 @@ void loop() {
           parity = parity ^ (parity >> 4);
           if (parity & 1 != !!symbol) {
             start_detected = false;
+            packet = false;
           }
           
         } else if (bit_pos == -2) {
 
           // If this is the stop bit, it must be clear
           if (!symbol) {
-            // Received a good character
+
+            // Check for packet boundaries
+            if (recv_char == STX) {
+
+              // Start receiving a packet
+              packet = true;
+              recv_buf_pos = 0;
+              
+            } else if (recv_char == ETX) {
+
+              // Terminate the receive buffer and print it
+              recv_buf[recv_buf_pos++] = '\0';
+              packet = false;
+              Serial.print(recv_buf);
+              
+            } else if (packet) {
+
+              // Append to the receive buffer if there is space
+              if (recv_buf_pos < sizeof(recv_buf) - 1) {
+                recv_buf[recv_buf_pos++] = recv_char;
+              }
+              
+            }
+            
           }
 
-          // Finish receiving
+          // Finish receiving character
           start_detected = false;
           
         } else {
@@ -144,7 +177,8 @@ void loop() {
             
     }
 
-    // Print data
+#if DEBUG
+    // Print debug data
     Serial.print(lpf_value);
     Serial.print("\t");
     Serial.print(symbol ? 400 : 0);
@@ -154,6 +188,7 @@ void loop() {
     Serial.print((unsigned char) recv_char, HEX);
     Serial.print(":");
     Serial.println(start_detected ? 400 : 0);
+#endif
 
     // Clear flag
     flag = false;
