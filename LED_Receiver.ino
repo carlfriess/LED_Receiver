@@ -21,6 +21,9 @@ void setup() {
   // Setup the serial port
   Serial.begin(115200);
 
+  // Prepare status LED
+  pinMode(LED_BUILTIN, OUTPUT);
+
   // Configure Timer 0 to interrupt at approx. 200Hz
   cli();                    //stop interrupts
   TCCR0A = 0;               // set entire TCCR0A register to 0
@@ -143,7 +146,7 @@ void loop() {
               packet = true;
               recv_buf_pos = 0;
               
-            } else if (recv_char == ETX) {
+            } else if (packet && recv_char == ETX) {
 
               // Terminate the receive buffer and print it
               recv_buf[recv_buf_pos++] = '\0';
@@ -176,6 +179,9 @@ void loop() {
       }
             
     }
+
+    // Update status LED
+    digitalWrite(LED_BUILTIN, packet);
 
 #if DEBUG
     // Print debug data
