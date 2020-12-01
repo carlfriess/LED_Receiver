@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, user-scalable=no" />
+    <title>Transmitter - LED Receiver</title>
+    <style type="text/css">
+        
+body {
+    text-align: center;
+}
+
+#flash {
+    width: 100%;
+    max-width: 300px;
+    height: 300px;
+    margin: 12px auto;
+    border: 1px solid black;
+    background-color: black;
+}
+
+    </style>
+</head>
+<body>
+
+    <div id="flash"></div>
+
+    <input id="msg" type="text" name="msg" placeholder="Type message here..." />
+    <button id="toggle">Send</button>
+
+    <script type="text/javascript">
+        
+const flash = document.getElementById("flash");
+const msg = document.getElementById("msg");
+const button = document.getElementById("toggle");
+
+let interval = null;
+
+button.onclick = () => {
+
+    // Stop any ongoing transmission
+    if (interval) {
+        clearInterval(interval);
+        interval = null;
+        flash.style.backgroundColor = "black";
+    }
+
+    // Build the bit sequence
+    const seq = [];
+    ["\x02", ...msg.value, "\n", "\x03"].forEach(c => seq.push(...encode(c.charCodeAt(0))));
+
+    // Send the sequence
+    interval = setInterval(() => {
+        if (!seq.length) {
+            clearInterval(interval);
+            interval = null;
+        } else if (seq.shift()) {
+            flash.style.backgroundColor = "white";
+        } else {
+            flash.style.backgroundColor = "black";
+        }
+    }, 50);
+
+}
+
+function parity(val) {
+    val = val ^ (val >> 1);
+    val = val ^ (val >> 2);
+    val = val ^ (val >> 4);
+    return val & 1;
+}
+
+function encode(char) {
+    const bits = [1];
+    for (var i = 0x80; i > 0; i >>= 1) {
+        bits.push(char & i ? 1 : 0);
+    }
+    bits.push(parity(char));
+    bits.push(0);
+    return bits;
+}
+
+    </script>
+
+</body>
+</html>
