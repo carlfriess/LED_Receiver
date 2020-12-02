@@ -1,6 +1,6 @@
 # Smartphone screen to LED communication
 
-A toy project demonstrating how any LED can be used to receive data from an arbitrary light source such as a smartphone screen while still maintaining its regular *light emitting* functionality. Try it out using the [transmitter app](https://carlfriess.github.io/LED_Receiver/).
+A toy project demonstrating how any LED can be used to receive data from an arbitrary light source such as a smartphone screen while still maintaining its usual *light emitting* functionality. Try it out using the [transmitter app](https://carlfriess.github.io/LED_Receiver/).
 
 This is interesting in that it shows that any device with an LED and a microcontroller is capable of communicating with other devices without additional hardware. For example, some toy or gadget without any other communication interface could be configured using a smartphone via its existing status LED.
 
@@ -13,3 +13,5 @@ This sketch was developed and tested on an Arduino Uno (ATmega328P) but may work
 Setting the `DEBUG` preprocessor macro to `1` will make the Arduino output additional data that can be conveniently plotted using the Arduino Serial Plotter. Below is a trace showing the sequence of characters `ABC`. The green line is the current measured light level, the blue line is a low-pass filtered version of the measured light level, the red line shows the estimation of if the current bit is 0 or 1 and the orange line shows the computed character boundaries.
 
 <p align="center"><img alt="Demo video" src="img/debug.png" /></p>
+
+Clearly there is plenty of room for improvement here. In particular, the symbol rate is very low, the modulation isn't particularly sophisticated and there is no forward error correction. I found the main limiting factor of the symbol rate in accurately timing the flashing in the browser. A native app should probably be able to meet tighter timing constraints and allow for slightly higher data rates.
